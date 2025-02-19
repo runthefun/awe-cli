@@ -1,0 +1,89 @@
+# dependencies
+node_modules
+**/node_modules
+/.pnp
+.pnp.js
+.pnp.js.map
+
+# testing
+/coverage
+
+# next.js
+/.next/
+.next
+/out/
+dist/
+.next
+.swc/
+# production
+/build
+api-build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env
+./server/.env
+.vercel
+
+yarn.lock
+
+#docker
+docker-compose.yml
+Dockerfile
+
+#local mongodb
+mongodb
+
+public/sw.*
+public/workbox-*
+
+*/coverage
+server/.env
+server/.env
+
+# turbo
+.turbo
+
+# vercel
+.vercel
+
+# vscode
+.vscode
+
+# partykit
+.partykit
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+
+##
+cloud-functions/functions/lib/**/*
+cloud-functions/functions/**/*.log
+
+cloud-functions/**/lib/*
+cloud-functions/**/*.log
+
+# scripting builds
+__types__
+__dist__
+__temp__
+
+workbox-*
+sw.*
+
+
+*.har
