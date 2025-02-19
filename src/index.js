@@ -22,7 +22,7 @@ program
       console.log(`Checking out game ${gameId}...`);
       await checkout({ gameId });
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error("Error:", error);
       process.exit(1);
     }
   });
@@ -34,7 +34,7 @@ program
     try {
       await syncUp();
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error("Error:", error);
       process.exit(1);
     }
   });

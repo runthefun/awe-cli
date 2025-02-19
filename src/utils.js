@@ -6,14 +6,17 @@ import ts from "typescript";
 
 export const SRC_DIR = path.join(process.cwd(), "src");
 
+export const ALLOWED_EXTS = [".js", ".ts", ".jsx", ".tsx"];
+
 export function copyDir(src, dest) {
   return fs.copy(src, dest);
 }
 
-export function writeFile(filePath, content) {
+export async function writeFile(filePath, content) {
   // ensure dir
+  console.log("writing file", filePath);
   const dir = path.dirname(filePath);
-  ensureDir(dir);
+  await ensureDir(dir);
   return fs.writeFile(filePath, content);
 }
 
@@ -52,6 +55,13 @@ export async function getLocalScripts() {
   const files = await readDirRecursive(SRC_DIR);
   const res = {};
   for (const file of files) {
+    // restrict to allowed extensions
+    if (
+      file.endsWith(".d.ts") ||
+      !ALLOWED_EXTS.some((ext) => file.endsWith(ext))
+    ) {
+      continue;
+    }
     const uri = pathToRemoteUri(file);
     res[uri] = file;
   }
@@ -61,6 +71,10 @@ export async function getLocalScripts() {
 export async function getRemoteScripts(opts = {}) {
   const gameId = opts.gameId ?? (await getGameId());
   const data = await ApiClient.instance.getScripts(gameId);
+  console.log(
+    "getRemoteScripts",
+    data.scripts.map((s) => s.uri + ": " + s.kit).join("\n")
+  );
   const res = {};
   for (const file of data.scripts) {
     const uri = file.uri;
@@ -68,8 +82,6 @@ export async function getRemoteScripts(opts = {}) {
   }
   return res;
 }
-
-const ALLOWED_EXTS = [".js", ".ts", ".jsx", ".tsx"];
 
 export function ensureExtension(uri) {
   const extension = ALLOWED_EXTS.find((ext) => uri.endsWith(ext));
@@ -84,7 +96,9 @@ export function pathToRemoteUri(filePath) {
   const relativePath = path.relative(SRC_DIR, filePath);
   let uri = "./" + relativePath.split(path.sep).join("/");
   // remove ts, js, tsx, jsx
-  uri = uri.replace(/\.(ts|js|tsx|jsx)$/, "");
+  // replace ./@awe with @awe
+  uri = uri.replace(/\.(ts|js|tsx|jsx)$/, "").replace(/^\.\/@awe/, "@awe");
+
   return uri;
 }
 

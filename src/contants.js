@@ -35,6 +35,7 @@ export const DEF_PACKAGE_JSON = {
   type: "module",
   scripts: {
     watch: "awe-cli watch",
+    push: "awe-cli push",
   },
   dependencies: {
     three: "0.160.0",

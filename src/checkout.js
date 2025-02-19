@@ -94,6 +94,6 @@ async function fetchTypes() {
   //
   const types = await ApiClient.instance.fetchTypes();
   for (const [dest, content] of Object.entries(types)) {
-    writeFile(path.join(aweDir, dest), content);
+    await writeFile(path.join(aweDir, dest), content);
   }
 }

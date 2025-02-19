@@ -23,7 +23,7 @@ export class ApiClient {
   }
 
   async queryApi(method, params) {
-    console.log("querying api", this.baseUrl);
+    // console.log("querying api", this.baseUrl);
     const token = await getToken();
     const response = await fetch(this.baseUrl, {
       method: "POST",
@@ -58,7 +58,7 @@ export class ApiClient {
 
   async fetchDts(name) {
     try {
-      const res = await fetch(`${AWE_SITE}/public/typings/${name}`);
+      const res = await fetch(`${AWE_SITE}/typings/${name}`);
       if (!res.ok) {
         throw new Error(`Failed to fetch ${name}`);
       }
@@ -97,10 +97,5 @@ export class ApiClient {
 
   async saveScripts(gameId, patches) {
     await this.queryApi("saveScripts", { gameId, patches });
-  }
-
-  async getUser() {
-    const result = await this.queryApi("getUser", []);
-    return result;
   }
 }
