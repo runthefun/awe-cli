@@ -51,7 +51,10 @@ export function watchScripts() {
     }
     try {
       isSyncing = true;
+      // let t1 = performance.now();
       await syncUp();
+      // let t2 = performance.now();
+      // console.log(`Sync completed in ${t2 - t1}ms`);
     } finally {
       isSyncing = false;
     }

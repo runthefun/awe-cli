@@ -19,16 +19,28 @@ export async function syncUp(opts = {}) {
 
   console.log(`Syncing local changes to game ${gameId}...`);
 
+  let t1 = performance.now();
   const remoteFiles = await getRemoteScripts({ gameId });
+  let t2 = performance.now();
+  console.log(`Remote files fetched in ${t2 - t1}ms`);
+
+  t1 = performance.now();
   const localFiles = await getLocalScripts();
+  t2 = performance.now();
+  console.log(`Local files fetched in ${t2 - t1}ms`);
 
   // Track all changes to be made
   const patches = [];
 
+  t1 = performance.now();
+
   // Process local files
   for (const [uri, filePath] of Object.entries(localFiles)) {
     //
+    // t1 = performance.now();
     const content = await fs.readFile(filePath, "utf-8");
+    // t2 = performance.now();
+    // console.log(`readFile ${uri} read in ${t2 - t1}ms`);
 
     const remoteFile = remoteFiles[uri];
 
@@ -48,13 +60,18 @@ export async function syncUp(opts = {}) {
       console.log(`New file: ${uri}`);
     } else if (remoteFile.code !== content) {
       // Changed file
+      // t1 = performance.now();
+      const emit = getEmit(filePath);
+      // t2 = performance.now();
+      // console.log(`Emit ${uri} computed in ${t2 - t1}ms`);
+
       patches.push({
         op: "replace",
         data: {
           name,
           uri,
           code: content,
-          emit: getEmit(filePath),
+          emit,
         },
       });
       console.log(`Changed: ${uri}`);
@@ -74,6 +91,9 @@ export async function syncUp(opts = {}) {
     console.log(`Deleted: ${uri}`);
   }
 
+  // t2 = performance.now();
+  // console.log(`Changes computed in ${t2 - t1}ms`);
+
   if (patches.length === 0) {
     console.log("No changes to sync");
     return;
@@ -81,8 +101,10 @@ export async function syncUp(opts = {}) {
 
   // Apply all changes
   console.log(`Applying ${patches.length} changes...`);
+  // t1 = performance.now();
   await ApiClient.instance.saveScripts(gameId, patches);
-  console.log("Sync completed successfully!");
+  // t2 = performance.now();
+  // console.log(`Patching completed in ${t2 - t1}ms`);
 }
 
 export async function syncDown(opts = {}) {

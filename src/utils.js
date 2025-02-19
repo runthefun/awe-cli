@@ -139,7 +139,7 @@ export async function ensureJSON(filePath, template, updateFn) {
   return current;
 }
 
-export function getEmit(filename) {
+export function getEmit(filename, content = null) {
   const host = ts.createCompilerHost({});
 
   let dtsContent = "";
@@ -153,6 +153,22 @@ export function getEmit(filename) {
       jsContent = text;
     }
   };
+
+  if (content) {
+    host.readFile = (file) => {
+      if (file === filename) {
+        return content;
+      }
+      return ts.sys.readFile(file);
+    };
+
+    host.fileExists = (file) => {
+      if (file === filename) {
+        return true;
+      }
+      return ts.sys.fileExists(file);
+    };
+  }
 
   const program = ts.createProgram(
     [filename],
@@ -168,6 +184,10 @@ export function getEmit(filename) {
       emitDeclarationOnly: false, // Set to true if you only want .d.ts files
       esModuleInterop: true, // Better interop with ES modules
       skipLibCheck: true, // Speeds up compilation by skipping type checking of declaration files
+      isolatedModules: true,
+      noEmit: false,
+      noEmitOnError: false,
+      noResolve: true, //
     },
     host
   );
