@@ -8,6 +8,13 @@ export const SRC_DIR = path.join(process.cwd(), "src");
 
 export const ALLOWED_EXTS = [".js", ".ts", ".jsx", ".tsx"];
 
+export function isAllowedExt(filePath) {
+  return (
+    !filePath.endsWith(".d.ts") &&
+    ALLOWED_EXTS.some((ext) => filePath.endsWith(ext))
+  );
+}
+
 export function copyDir(src, dest) {
   return fs.copy(src, dest);
 }
@@ -56,10 +63,7 @@ export async function getLocalScripts() {
   const res = {};
   for (const file of files) {
     // restrict to allowed extensions
-    if (
-      file.endsWith(".d.ts") ||
-      !ALLOWED_EXTS.some((ext) => file.endsWith(ext))
-    ) {
+    if (!isAllowedExt(file)) {
       continue;
     }
     const uri = pathToRemoteUri(file);
@@ -71,10 +75,7 @@ export async function getLocalScripts() {
 export async function getRemoteScripts(opts = {}) {
   const gameId = opts.gameId ?? (await getGameId());
   const data = await ApiClient.instance.getScripts(gameId);
-  console.log(
-    "getRemoteScripts",
-    data.scripts.map((s) => s.uri + ": " + s.kit).join("\n")
-  );
+
   const res = {};
   for (const file of data.scripts) {
     const uri = file.uri;

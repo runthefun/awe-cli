@@ -98,8 +98,6 @@ export async function syncDown(opts = {}) {
   const remoteFiles = await getRemoteScripts({ gameId });
   const localFiles = await getLocalScripts();
 
-  console.log(`Fetched from remote: ${Object.keys(remoteFiles)} files`);
-
   // sync with remote files: add new remote, update changed remote, delete missing remote
   for (const [uri, remoteFile] of Object.entries(remoteFiles)) {
     const localFile = localFiles[uri];

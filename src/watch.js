@@ -1,41 +1,65 @@
 import chokidar from "chokidar";
 import path from "path";
-import { syncUp } from "sync.js";
+import { syncUp } from "./sync.js";
+import { isAllowedExt } from "./utils.js";
 
 const srcDir = path.join(process.cwd(), "src");
 
-// Initialize watcher
-const watcher = chokidar.watch(["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"], {
-  cwd: srcDir,
-  ignoreInitial: false,
-  persistent: true,
-});
+export function watchScripts() {
+  // Initialize watcher
+  const watcher = chokidar.watch(srcDir, {
+    ignored: (filePath, stats) => {
+      const res = stats?.isFile() ? !isAllowedExt(filePath) : false;
+      // if (res) {
+      //   console.log("ignored", filePath);
+      // }
+      return res;
+    },
+    ignoreInitial: false,
+    persistent: true,
+  });
 
-watcher.on("add", () => scheduleSync());
-watcher.on("change", () => scheduleSync());
-watcher.on("unlink", () => scheduleSync());
+  watcher.on("add", (filePath) => {
+    console.log("add", filePath);
+    scheduleSync();
+  });
 
-let syncScheduleTimeout = null;
+  watcher.on("change", (filePath) => {
+    console.log("change", filePath);
+    scheduleSync();
+  });
 
-function scheduleSync() {
-  if (syncScheduleTimeout) {
-    clearTimeout(syncScheduleTimeout);
+  watcher.on("unlink", (filePath) => {
+    console.log("unlink", filePath);
+    scheduleSync();
+  });
+
+  let syncScheduleTimeout = null;
+
+  function scheduleSync() {
+    if (syncScheduleTimeout) {
+      clearTimeout(syncScheduleTimeout);
+    }
+    syncScheduleTimeout = setTimeout(sync, 1000);
   }
-  syncScheduleTimeout = setTimeout(syncUp, 1000);
+
+  let isSyncing = false;
+  async function sync() {
+    if (isSyncing) {
+      console.log("Sync already in progress");
+      return;
+    }
+    try {
+      isSyncing = true;
+      await syncUp();
+    } finally {
+      isSyncing = false;
+    }
+  }
+
+  watcher.on("error", (error) => {
+    console.error("Error watching scripts", error);
+  });
+
+  console.log(`Watching for file changes in src directory...`);
 }
-
-let isSyncing = false;
-async function sync() {
-  if (isSyncing) {
-    console.log("Sync already in progress");
-    return;
-  }
-  try {
-    isSyncing = true;
-    await syncUp();
-  } finally {
-    isSyncing = false;
-  }
-}
-
-console.log("Watching for file changes in src directory...");

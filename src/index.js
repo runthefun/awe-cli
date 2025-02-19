@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-import path from "path";
-import fs from "fs-extra";
 import { fileURLToPath } from "url";
-import { ApiClient } from "./api.js";
 import { syncUp } from "./sync.js";
 import { checkout } from "./checkout.js";
+import { watchScripts } from "./watch.js";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -33,6 +31,19 @@ program
   .action(async () => {
     try {
       await syncUp();
+    } catch (error) {
+      console.error("Error:", error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("watch")
+  .description("Watch for file changes and push local changes to remote game")
+  .action(async () => {
+    try {
+      watchScripts();
+      console.log("after watch");
     } catch (error) {
       console.error("Error:", error);
       process.exit(1);
