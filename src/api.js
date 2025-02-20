@@ -96,6 +96,7 @@ export class ApiClient {
   }
 
   async saveScripts(gameId, patches) {
-    await this.queryApi("saveScripts", { gameId, patches });
+    const result = await this.queryApi("saveScripts", { gameId, patches });
+    return result;
   }
 }

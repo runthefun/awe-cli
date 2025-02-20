@@ -6,7 +6,7 @@ import { Command } from "commander";
 import { fileURLToPath } from "url";
 import { syncUp } from "./sync.js";
 import { checkout } from "./checkout.js";
-import { watchFullSync } from "./watch.js";
+import { watch } from "./watch.js";
 import { start } from "./start.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -33,7 +33,9 @@ program
   .description("Push local changes to remote game")
   .action(async () => {
     try {
+      console.log("Syncing local changes to remote game...");
       await syncUp();
+      console.log("Sync completed");
     } catch (error) {
       console.error("Error:", error);
       process.exit(1);
@@ -42,10 +44,12 @@ program
 
 program
   .command("watch")
+  // debounce in ms
+  .option("-d, --debounce <debounce>", "Debounce interval in ms")
   .description("Watch for file changes and push local changes to remote game")
-  .action(async () => {
+  .action(async (opts) => {
     //
-    watchFullSync();
+    watch({ syncDelay: opts.interval });
   });
 
 program

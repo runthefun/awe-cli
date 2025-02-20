@@ -36,6 +36,7 @@ export const DEF_PACKAGE_JSON = {
   description: "Game project created with awe-cli",
   type: "module",
   scripts: {
+    login: "awe-cli login",
     watch: "awe-cli watch",
     push: "awe-cli push",
     start: "awe-cli start",

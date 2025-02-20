@@ -12,22 +12,25 @@ import path from "path";
 
 export async function syncUp(opts = {}) {
   //
+  let t1, t2;
+
+  console.log("Performing full sync ...");
   const gameId = opts.gameId ?? (await getGameId());
 
   if (!gameId) {
     throw new Error("No game ID found in package.json metadata");
   }
 
-  console.log(`Syncing local changes to game ${gameId}...`);
+  // console.log(`Syncing local changes to game ${gameId}...`);
 
-  // let t1 = performance.now();
+  // t1 = performance.now();
   const remoteFiles = await getRemoteScripts({ gameId });
-  // let t2 = performance.now();
+  // t2 = performance.now();
   // console.log(`Remote files fetched in ${t2 - t1}ms`);
 
-  // let t1 = performance.now();
+  // t1 = performance.now();
   const localFiles = await getLocalScripts();
-  // let t2 = performance.now();
+  // t2 = performance.now();
   // console.log(`Local files fetched in ${t2 - t1}ms`);
 
   // Track all changes to be made
@@ -97,15 +100,16 @@ export async function syncUp(opts = {}) {
 
   if (patches.length === 0) {
     console.log("No changes to sync");
-    return;
+    return 0;
   }
 
   // Apply all changes
-  console.log(`Applying ${patches.length} changes...`);
-  // t1 = performance.now();
+  // console.log(`Applying ${patches.length} changes...`);
+  t1 = performance.now();
   await ApiClient.instance.saveScripts(gameId, patches);
-  // t2 = performance.now();
-  // console.log(`Patching completed in ${t2 - t1}ms`);
+  t2 = performance.now();
+  console.log(`Synced ${patches.length} changes in ${t2 - t1}ms`);
+  return patches.length;
 }
 
 export async function syncDown(opts = {}) {

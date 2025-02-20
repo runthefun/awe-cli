@@ -12,9 +12,11 @@ export async function login() {
     const token = await getToken();
 
     if (token) {
-      console.log(`Already logged in!`);
+      // console.log(`Already logged in!`);
       return resolve(token);
     }
+
+    console.log(`Logging in...`);
 
     const server = createServer(async (req, res) => {
       //

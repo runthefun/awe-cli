@@ -1,19 +1,12 @@
 // @ts-check
 
 import { createServer } from "http";
-import { promises as fs } from "fs";
 import { parse as parseUrl } from "url";
-import open from "open";
-import { AWE_SITE } from "./contants.js";
-import {
-  getToken,
-  setToken,
-  deleteToken,
-  getGameId,
-  pathToRemoteUri,
-  getEmit,
-} from "./utils.js";
-import { watchScripts } from "./watch.js";
+import { getGameId } from "./utils.js";
+import { watchPatches } from "./watchScripts.js";
+import { login } from "./login.js";
+import { syncUp } from "./sync.js";
+import { ApiClient } from "./api.js";
 
 export async function start() {
   //
@@ -24,12 +17,11 @@ export async function start() {
     return;
   }
 
-  const token = await getToken();
+  await login();
 
-  if (!token) {
-    console.log(`No token found. Please login first.`);
-    return;
-  }
+  await syncUp({ gameId });
+
+  let clients = new Set();
 
   const server = createServer(async (req, res) => {
     //
@@ -50,7 +42,7 @@ export async function start() {
       return res.end();
     }
 
-    console.log("Client connected ", req.socket.remoteAddress);
+    console.log("Client connected ", req.url, req.socket.remoteAddress);
 
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
@@ -62,15 +54,19 @@ export async function start() {
       "Access-Control-Allow-Credentials": "true",
     });
 
-    watchPatches(req, res, query);
+    clients.add(res);
 
     req.on("close", () => {
       console.log("Client disconnected");
+      clients.delete(res);
       res.end();
     });
   });
 
+  let watcher = null;
+
   server.listen(3568, () => {
+    //
     const address = server.address();
     if (!address || typeof address === "string") {
       server.close();
@@ -79,28 +75,47 @@ export async function start() {
     }
 
     console.log(`Server started at http://localhost:${address.port}`);
+    console.log(`Listening for patches...`);
 
-    // const loginUrl = `${AWE_SITE}/studio/${gameId}?dev=true`;
-    // console.log(`Opening browser for login...`);
-    //open(loginUrl);
-  });
-}
+    watcher = watchPatches({
+      ignoreInitial: true,
+      onPatch: async (patch) => {
+        console.log("Patch received", patch.op, patch.data.uri);
+        for (const client of clients) {
+          client.write(`data: ${JSON.stringify(patch)}\n\n`);
+        }
+        scheduleCommit([patch]);
+      },
+    });
 
-function watchPatches(req, res, query) {
-  //
-  const watcher = watchScripts({
-    callback: async ({ op, filePath }) => {
-      const code = await fs.readFile(filePath, "utf-8");
-      const uri = pathToRemoteUri(filePath);
-      let emit = null;
-      if (query.compile === "true") {
-        emit = getEmit(filePath, code);
-      }
-      res.write(`data: ${JSON.stringify({ op, uri, code, emit })}\n\n`);
-    },
+    server.on("close", () => {
+      watcher?.close();
+    });
   });
 
-  req.on("close", () => {
-    watcher.close();
-  });
+  let commitQueue = [];
+  let commitTimeout = null;
+
+  async function scheduleCommit(patches) {
+    commitQueue.push(...patches);
+    if (commitTimeout) {
+      clearTimeout(commitTimeout);
+    }
+    commitTimeout = setTimeout(_commitPatches, 1000);
+  }
+
+  async function _commitPatches() {
+    while (commitQueue.length > 0) {
+      const patches = commitQueue.slice(0);
+      commitQueue = [];
+      console.log(`Committing ${patches.length} patches...`);
+      let t1 = performance.now();
+      let nbChanges = await ApiClient.instance.saveScripts(gameId, patches);
+      let t2 = performance.now();
+      console.log(
+        `Committed ${patches.length} patches in ${t2 - t1}ms`,
+        `saved ${nbChanges} changes`
+      );
+    }
+  }
 }
