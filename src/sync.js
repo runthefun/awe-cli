@@ -1,3 +1,4 @@
+// @ts-check
 import { promises as fs } from "fs";
 import { ApiClient } from "./api.js";
 import {
@@ -19,20 +20,20 @@ export async function syncUp(opts = {}) {
 
   console.log(`Syncing local changes to game ${gameId}...`);
 
-  let t1 = performance.now();
+  // let t1 = performance.now();
   const remoteFiles = await getRemoteScripts({ gameId });
-  let t2 = performance.now();
-  console.log(`Remote files fetched in ${t2 - t1}ms`);
+  // let t2 = performance.now();
+  // console.log(`Remote files fetched in ${t2 - t1}ms`);
 
-  t1 = performance.now();
+  // let t1 = performance.now();
   const localFiles = await getLocalScripts();
-  t2 = performance.now();
-  console.log(`Local files fetched in ${t2 - t1}ms`);
+  // let t2 = performance.now();
+  // console.log(`Local files fetched in ${t2 - t1}ms`);
 
   // Track all changes to be made
   const patches = [];
 
-  t1 = performance.now();
+  // t1 = performance.now();
 
   // Process local files
   for (const [uri, filePath] of Object.entries(localFiles)) {

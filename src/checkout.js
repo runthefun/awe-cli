@@ -1,3 +1,5 @@
+// @ts-check
+
 import path from "path";
 import {
   getGameId,
@@ -43,7 +45,7 @@ export async function checkout(opts = {}) {
   execSync("npm install", { stdio: "inherit" });
 }
 
-async function ensurePackageJson(gameId, updateFn = null) {
+async function ensurePackageJson(gameId, updateFn) {
   //
   let json = await ensureJSON(
     path.join(process.cwd(), "package.json"),

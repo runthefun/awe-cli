@@ -1,3 +1,5 @@
+// @ts-check
+
 export const AWE_SITE = "http://localhost:3000";
 
 const TYPINGS_PATH = "./@awe/awe-scripting.d.ts";
@@ -36,6 +38,7 @@ export const DEF_PACKAGE_JSON = {
   scripts: {
     watch: "awe-cli watch",
     push: "awe-cli push",
+    start: "awe-cli start",
   },
   dependencies: {
     three: "0.160.0",

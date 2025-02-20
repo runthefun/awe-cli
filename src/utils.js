@@ -1,3 +1,5 @@
+// @ts-check
+
 import { ApiClient } from "./api.js";
 import fs from "fs-extra";
 import path from "path";

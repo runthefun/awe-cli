@@ -60,7 +60,7 @@ export async function login() {
       }
     });
 
-    server.listen(0, () => {
+    server.listen(3567, () => {
       const address = server.address();
       if (!address || typeof address === "string") {
         server.close();

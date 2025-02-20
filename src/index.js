@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
+// @ts-check
+
 import { Command } from "commander";
 import { fileURLToPath } from "url";
 import { syncUp } from "./sync.js";
 import { checkout } from "./checkout.js";
-import { watchScripts } from "./watch.js";
+import { watchFullSync } from "./watch.js";
+import { start } from "./start.js";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -41,13 +44,15 @@ program
   .command("watch")
   .description("Watch for file changes and push local changes to remote game")
   .action(async () => {
-    try {
-      watchScripts();
-      console.log("after watch");
-    } catch (error) {
-      console.error("Error:", error);
-      process.exit(1);
-    }
+    //
+    watchFullSync();
+  });
+
+program
+  .command("start")
+  .description("Start the game in development mode")
+  .action(async () => {
+    await start();
   });
 
 program.parse();
