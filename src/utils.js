@@ -141,7 +141,7 @@ export async function ensureJSON(filePath, template, updateFn) {
   return current;
 }
 
-export function getEmit(filename, content = null) {
+export function getEmit(filename, content) {
   const host = ts.createCompilerHost({});
 
   let dtsContent = "";

@@ -11,6 +11,7 @@ import {
   deleteToken,
   getGameId,
   pathToRemoteUri,
+  getEmit,
 } from "./utils.js";
 import { watchScripts } from "./watch.js";
 
@@ -61,7 +62,7 @@ export async function start() {
       "Access-Control-Allow-Credentials": "true",
     });
 
-    watchPatches(req, res);
+    watchPatches(req, res, query);
 
     req.on("close", () => {
       console.log("Client disconnected");
@@ -85,13 +86,17 @@ export async function start() {
   });
 }
 
-function watchPatches(req, res) {
+function watchPatches(req, res, query) {
   //
   const watcher = watchScripts({
     callback: async ({ op, filePath }) => {
       const code = await fs.readFile(filePath, "utf-8");
       const uri = pathToRemoteUri(filePath);
-      res.write(`data: ${JSON.stringify({ op, uri, code })}\n\n`);
+      let emit = null;
+      if (query.compile === "true") {
+        emit = getEmit(filePath, code);
+      }
+      res.write(`data: ${JSON.stringify({ op, uri, code, emit })}\n\n`);
     },
   });
 
