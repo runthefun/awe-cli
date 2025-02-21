@@ -47,10 +47,6 @@ export async function watch(opts = {}) {
         spinner.start();
         const t1 = performance.now();
         let res = await ApiClient.instance.saveScripts(gameId, [patch]);
-        // simulate error
-        if (Math.random() < 0.5) {
-          throw new Error(`Failed to save script ${patch.data.uri}`);
-        }
         const t2 = performance.now();
         Logger.verbose(`Saved (${res}) in ${t2 - t1}ms`);
         if (currentFrame === frame) {

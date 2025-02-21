@@ -4,7 +4,13 @@ import chokidar from "chokidar";
 import path from "path";
 import { promises as fs } from "fs";
 import { syncUp } from "./sync.js";
-import { getEmit, isAllowedExt, nanoid, pathToRemoteUri } from "./utils.js";
+import {
+  getEmit,
+  getName,
+  isAllowedExt,
+  nanoid,
+  pathToRemoteUri,
+} from "./utils.js";
 import { Logger } from "./logger.js";
 const srcDir = path.join(process.cwd(), "src");
 
@@ -70,6 +76,7 @@ export function watchPatches(opts = {}) {
 
         if (op === "add") {
           patch.data.id = `script-${nanoid()}`;
+          patch.data.name = getName(uri);
         }
       } else {
         patch.data = {

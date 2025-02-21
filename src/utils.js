@@ -263,3 +263,10 @@ export function formatPatch(patch) {
     return chalk.dim(patch.data.uri);
   }
 }
+
+export function getName(uri) {
+  if (uri.startsWith("./")) {
+    return uri.slice(2);
+  }
+  return path.basename(uri);
+}

@@ -7,6 +7,8 @@ import {
   getRemoteScripts,
   getEmit,
   remoteUriToPath,
+  nanoid,
+  getName,
 } from "./utils.js";
 import path from "path";
 import { Logger } from "./logger.js";
@@ -48,13 +50,14 @@ export async function syncUp(opts = {}) {
 
     const remoteFile = remoteFiles[uri];
 
-    const name = path.basename(uri);
+    const name = getName(uri);
 
     if (!remoteFile) {
       // New file
       patches.push({
         op: "add",
         data: {
+          id: `script-${nanoid()}`,
           name,
           uri,
           code: content,
