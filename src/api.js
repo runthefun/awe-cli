@@ -23,8 +23,9 @@ export class ApiClient {
   }
 
   async queryApi(method, params) {
-    Logger.verbose(`querying api ${this.baseUrl}`);
+    //
     const token = await getToken();
+
     const response = await fetch(this.baseUrl, {
       method: "POST",
       headers: {
@@ -35,11 +36,17 @@ export class ApiClient {
         method,
         params: [params],
       }),
+    }).catch((error) => {
+      throw new Error(`Failed to query API ${method}: ${error}`);
     });
+
+    if (!response.ok) {
+      throw new Error(`Failed to query API ${method}: ${response.statusText}`);
+    }
 
     const result = await response.json();
     if (result.type === "Error") {
-      throw new Error(result.error);
+      throw new Error(`Failed to query API ${method}: ${result.error}`);
     }
     return result.value;
   }

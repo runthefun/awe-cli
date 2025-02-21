@@ -1,8 +1,9 @@
 // @ts-check
 
-export const AWE_SITE = "http://localhost:3000";
+// export const AWE_SITE = "http://localhost:3000";
+export const AWE_SITE = "https://oo-git-awe-cli-oncyber.vercel.app";
 
-const TYPINGS_PATH = "./@awe/awe-scripting.d.ts";
+const TYPINGS_PATH = ".awe/awe-scripting.d.ts";
 
 export const DEF_TSCONFIG = {
   compilerOptions: {
@@ -21,8 +22,8 @@ export const DEF_TSCONFIG = {
     jsx: "react",
     baseUrl: "./src",
     paths: {
-      "@oo/scripting": [TYPINGS_PATH],
-      "@awe/scripting": [TYPINGS_PATH],
+      "@oo/scripting": [`../${TYPINGS_PATH}`],
+      "@awe/scripting": [`../${TYPINGS_PATH}`],
       "@oncyber/*": ["@awe/*"],
     },
   },

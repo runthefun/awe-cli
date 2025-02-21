@@ -78,8 +78,8 @@ export class Logger {
   }
 
   static headline(message) {
-    console.log("\n" + chalk.blue.bold(message));
-    console.log(chalk.dim("─".repeat(50)) + "\n");
+    console.log("\n" + chalk.blue.bold(message) + "\n");
+    //console.log(chalk.dim("─".repeat(50)) + "\n");
   }
 
   static success(message) {
@@ -87,6 +87,6 @@ export class Logger {
   }
 
   static info(message) {
-    console.log(chalk.blue(message));
+    console.log(chalk.green(message));
   }
 }

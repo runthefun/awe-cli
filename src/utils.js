@@ -10,7 +10,9 @@ import { DEF_GIT_IGNORE } from "./contants.js";
 import { Logger } from "./logger.js";
 import chalk from "chalk";
 
-export const SRC_DIR = path.join(process.cwd(), "src");
+export function getSrcDir(workDir = process.cwd()) {
+  return path.join(workDir, "src");
+}
 
 export const ALLOWED_EXTS = [".js", ".ts", ".jsx", ".tsx"];
 
@@ -29,11 +31,11 @@ export async function writeFile(filePath, content) {
   // ensure dir
   const dir = path.dirname(filePath);
   await ensureDir(dir);
-  return fs.writeFile(filePath, content);
+  return fs.writeFile(filePath, content, "utf-8");
 }
 
-export async function getGameId() {
-  const packageJson = await readJSON("package.json");
+export async function getGameId(workDir = process.cwd()) {
+  const packageJson = await readJSON(path.join(workDir, "package.json"));
   return packageJson?.awe?.gameId;
 }
 
@@ -63,15 +65,16 @@ export async function readDirRecursive(dir) {
   return files;
 }
 
-export async function getLocalScripts() {
-  const files = await readDirRecursive(SRC_DIR);
+export async function getLocalScripts(workDir = process.cwd()) {
+  const srcDir = getSrcDir(workDir);
+  const files = await readDirRecursive(srcDir);
   const res = {};
   for (const file of files) {
     // restrict to allowed extensions
     if (!isAllowedExt(file)) {
       continue;
     }
-    const uri = pathToRemoteUri(file);
+    const uri = pathToRemoteUri(file, workDir);
     res[uri] = file;
   }
   return res;
@@ -98,8 +101,9 @@ export function ensureExtension(uri) {
 }
 
 // Get relative uri for a file path
-export function pathToRemoteUri(filePath) {
-  const relativePath = path.relative(SRC_DIR, filePath);
+export function pathToRemoteUri(filePath, workDir = process.cwd()) {
+  const srcDir = getSrcDir(workDir);
+  const relativePath = path.relative(srcDir, filePath);
   let uri = "./" + relativePath.split(path.sep).join("/");
   // remove ts, js, tsx, jsx
   // replace ./@awe with @awe
@@ -108,9 +112,9 @@ export function pathToRemoteUri(filePath) {
   return uri;
 }
 
-export function remoteUriToPath(uri) {
+export function remoteUriToPath(uri, workDir = process.cwd()) {
   let relativePath = ensureExtension(uri);
-  return path.join(SRC_DIR, relativePath);
+  return path.join(getSrcDir(workDir), relativePath);
 }
 
 export async function readJSON(filePath) {
@@ -237,17 +241,16 @@ export function nanoid(size = 21) {
   return id;
 }
 
-export async function ensureGitRepo() {
-  //
-  const gitDir = path.join(process.cwd(), ".git");
+export async function ensureGitRepo(workDir = process.cwd()) {
+  const gitDir = path.join(workDir, ".git");
 
   if (!fs.existsSync(gitDir)) {
     Logger.verbose("Initializing git repository...");
-    execSync("git init");
+    execSync("git init", { cwd: workDir });
   }
 
   // add gitignore
-  const gitIgnorePath = path.join(process.cwd(), ".gitignore");
+  const gitIgnorePath = path.join(workDir, ".gitignore");
   if (!fs.existsSync(gitIgnorePath)) {
     Logger.verbose("Adding gitignore...");
     fs.writeFileSync(gitIgnorePath, DEF_GIT_IGNORE);

@@ -9,6 +9,7 @@ import {
   remoteUriToPath,
   nanoid,
   getName,
+  writeFile,
 } from "./utils.js";
 import path from "path";
 import { Logger } from "./logger.js";
@@ -116,25 +117,25 @@ export async function syncUp(opts = {}) {
 }
 
 export async function syncDown(opts = {}) {
-  //
-  const gameId = opts.gameId ?? (await getGameId());
+  const workDir = opts.dir ?? process.cwd();
+  const gameId = opts.gameId ?? (await getGameId(workDir));
 
   if (!gameId) {
     throw new Error("No game ID found in package.json metadata");
   }
 
   const remoteFiles = await getRemoteScripts({ gameId });
-  const localFiles = await getLocalScripts();
+  const localFiles = await getLocalScripts(workDir);
 
   // sync with remote files: add new remote, update changed remote, delete missing remote
   for (const [uri, remoteFile] of Object.entries(remoteFiles)) {
     const localFile = localFiles[uri];
     if (!localFile || localFile.code !== remoteFile.code) {
       // update local
-      const filePath = remoteUriToPath(uri);
-      const relativePath = path.relative(process.cwd(), filePath);
+      const filePath = remoteUriToPath(uri, workDir);
+      const relativePath = path.relative(workDir, filePath);
       Logger.verbose(`Updating local: ${relativePath}`);
-      await fs.writeFile(filePath, remoteFile.code, "utf-8");
+      await writeFile(filePath, remoteFile.code);
     }
   }
 
