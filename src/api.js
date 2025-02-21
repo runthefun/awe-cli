@@ -63,6 +63,11 @@ export class ApiClient {
     };
   }
 
+  async createGame({ title }) {
+    const gameId = await this.queryApi("createGame", { title });
+    return gameId;
+  }
+
   async fetchDts(name) {
     try {
       const res = await fetch(`${AWE_SITE}/typings/${name}`);

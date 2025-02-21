@@ -9,6 +9,9 @@ import { syncUp } from "./sync.js";
 import { ApiClient } from "./api.js";
 import { Logger } from "./logger.js";
 import chalk from "chalk";
+import { AWE_SITE } from "./contants.js";
+import open from "open";
+
 export async function start() {
   //
   const gameId = await getGameId();
@@ -99,6 +102,9 @@ export async function start() {
     server.on("close", () => {
       watcher?.close();
     });
+
+    Logger.log(`Opening ${AWE_SITE}/studio/${gameId}?dev=true`);
+    open(`${AWE_SITE}/studio/${gameId}?dev=true`);
   });
 
   let commitQueue = [];

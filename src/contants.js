@@ -56,7 +56,7 @@ export const DEF_PACKAGE_JSON = {
     chokidar: "^3.5.3",
     "@types/three": "^0.173.0",
     "@types/react": "^18",
-    // "awe-cli": "^1",
+    "awe-cli": "latest",
   },
 };
 

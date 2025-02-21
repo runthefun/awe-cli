@@ -1,7 +1,7 @@
 {
   "name": "awe-cli",
-  "version": "1.0.0",
-  "description": "CLI tool to fetch and create game projects",
+  "version": "0.0.4",
+  "description": "CLI tool to develop https://awe.box games locally",
   "main": "src/index.js",
   "bin": {
     "awe-cli": "./src/index.js"
@@ -10,15 +10,14 @@
     "start": "node src/index.js"
   },
   "dependencies": {
+    "@types/fs-extra": "^11.0.4",
     "chalk": "^5.4.1",
+    "chokidar": "^4.0.3",
     "commander": "^12.0.0",
     "fs-extra": "^11.2.0",
-    "@types/fs-extra": "^11.0.4",
     "open": "^10.0.3",
     "ora": "^8.2.0",
-    "chokidar": "^4.0.3",
     "typescript": "^5.3.3"
   },
-  "devDependencies": {},
   "type": "module"
 }
