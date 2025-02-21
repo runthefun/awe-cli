@@ -2,24 +2,29 @@
 
 import { createServer } from "http";
 import { parse as parseUrl } from "url";
-import { getGameId } from "./utils.js";
+import { formatPatch, getGameId } from "./utils.js";
 import { watchPatches } from "./watchScripts.js";
 import { login } from "./login.js";
 import { syncUp } from "./sync.js";
 import { ApiClient } from "./api.js";
-
+import { Logger } from "./logger.js";
+import chalk from "chalk";
 export async function start() {
   //
   const gameId = await getGameId();
 
   if (!gameId) {
-    console.log(`No game ID found!`);
+    Logger.error(`No game ID found!`);
     return;
   }
 
-  await login();
+  await Logger.withSpinner("Logging in...", async () => {
+    await login();
+  });
 
-  await syncUp({ gameId });
+  await Logger.withSpinner("Syncing game scripts...", async () => {
+    await syncUp({ gameId });
+  });
 
   let clients = new Set();
 
@@ -42,7 +47,7 @@ export async function start() {
       return res.end();
     }
 
-    console.log("Client connected ", req.url, req.socket.remoteAddress);
+    Logger.log(`Client connected ${req.socket.remoteAddress}`);
 
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
@@ -57,7 +62,7 @@ export async function start() {
     clients.add(res);
 
     req.on("close", () => {
-      console.log("Client disconnected");
+      Logger.log("Client disconnected");
       clients.delete(res);
       res.end();
     });
@@ -70,17 +75,20 @@ export async function start() {
     const address = server.address();
     if (!address || typeof address === "string") {
       server.close();
-      console.error("Failed to start server");
+      Logger.error("Failed to start server");
       return;
     }
 
-    console.log(`Server started at http://localhost:${address.port}`);
-    console.log(`Listening for patches...`);
+    Logger.log(
+      `\nServer started at ${chalk.green(`http://localhost:${address.port}`)}`
+    );
+
+    console.log("👀 Watching for scripts changes...\n");
 
     watcher = watchPatches({
       ignoreInitial: true,
       onPatch: async (patch) => {
-        console.log("Patch received", patch.op, patch.data.uri);
+        Logger.verbose(`Patch received ${patch.op} ${patch.data.uri}`);
         for (const client of clients) {
           client.write(`data: ${JSON.stringify(patch)}\n\n`);
         }
@@ -101,20 +109,26 @@ export async function start() {
     if (commitTimeout) {
       clearTimeout(commitTimeout);
     }
-    commitTimeout = setTimeout(_commitPatches, 1000);
+    commitTimeout = setTimeout(() => {
+      const uris = chalk.dim(commitQueue.map((p) => formatPatch(p)).join(", "));
+      Logger.withSpinner(`Committing changes (${uris})...`, async () => {
+        await _commitPatches();
+      });
+    }, 200);
   }
 
   async function _commitPatches() {
     while (commitQueue.length > 0) {
       const patches = commitQueue.slice(0);
       commitQueue = [];
-      console.log(`Committing ${patches.length} patches...`);
+      Logger.verbose(`Committing ${patches.length} patches...`);
       let t1 = performance.now();
       let nbChanges = await ApiClient.instance.saveScripts(gameId, patches);
       let t2 = performance.now();
-      console.log(
-        `Committed ${patches.length} patches in ${t2 - t1}ms`,
-        `saved ${nbChanges} changes`
+      Logger.verbose(
+        `Committed ${patches.length} patches in ${
+          t2 - t1
+        }ms, saved ${nbChanges} changes`
       );
     }
   }

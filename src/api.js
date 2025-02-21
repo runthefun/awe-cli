@@ -3,7 +3,7 @@ import { AWE_SITE } from "./contants.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-
+import { Logger } from "./logger.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -23,7 +23,7 @@ export class ApiClient {
   }
 
   async queryApi(method, params) {
-    // console.log("querying api", this.baseUrl);
+    Logger.verbose(`querying api ${this.baseUrl}`);
     const token = await getToken();
     const response = await fetch(this.baseUrl, {
       method: "POST",
@@ -65,8 +65,8 @@ export class ApiClient {
       return await res.text();
     } catch (error) {
       // Fallback to local file
-      console.log(`Failed to fetch dts ${name} from remote`);
-      console.log("Falling back to local file");
+      Logger.verbose(`Failed to fetch dts ${name} from remote`);
+      Logger.verbose("Falling back to local file");
       try {
         const localPath = path.join(__dirname, "./typings", name);
         const content = await fs.promises.readFile(localPath, "utf-8");

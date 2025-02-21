@@ -5,6 +5,10 @@ import fs from "fs-extra";
 import path from "path";
 import os from "os";
 import ts from "typescript";
+import { exec, execSync } from "child_process";
+import { DEF_GIT_IGNORE } from "./contants.js";
+import { Logger } from "./logger.js";
+import chalk from "chalk";
 
 export const SRC_DIR = path.join(process.cwd(), "src");
 
@@ -23,14 +27,13 @@ export function copyDir(src, dest) {
 
 export async function writeFile(filePath, content) {
   // ensure dir
-  console.log("writing file", filePath);
   const dir = path.dirname(filePath);
   await ensureDir(dir);
   return fs.writeFile(filePath, content);
 }
 
 export async function getGameId() {
-  const packageJson = JSON.parse(await fs.readFile("package.json", "utf-8"));
+  const packageJson = await readJSON("package.json");
   return packageJson?.awe?.gameId;
 }
 
@@ -232,4 +235,31 @@ export function nanoid(size = 21) {
     id += urlAlphabet[(Math.random() * 64) | 0];
   }
   return id;
+}
+
+export async function ensureGitRepo() {
+  //
+  const gitDir = path.join(process.cwd(), ".git");
+
+  if (!fs.existsSync(gitDir)) {
+    Logger.verbose("Initializing git repository...");
+    execSync("git init");
+  }
+
+  // add gitignore
+  const gitIgnorePath = path.join(process.cwd(), ".gitignore");
+  if (!fs.existsSync(gitIgnorePath)) {
+    Logger.verbose("Adding gitignore...");
+    fs.writeFileSync(gitIgnorePath, DEF_GIT_IGNORE);
+  }
+}
+
+export function formatPatch(patch) {
+  if (patch.op === "add") {
+    return chalk.green(patch.data.uri);
+  } else if (patch.op === "remove") {
+    return chalk.red(patch.data.uri);
+  } else {
+    return chalk.dim(patch.data.uri);
+  }
 }

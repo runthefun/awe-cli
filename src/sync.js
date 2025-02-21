@@ -9,42 +9,42 @@ import {
   remoteUriToPath,
 } from "./utils.js";
 import path from "path";
+import { Logger } from "./logger.js";
 
 export async function syncUp(opts = {}) {
   //
   let t1, t2;
 
-  console.log("Performing full sync ...");
   const gameId = opts.gameId ?? (await getGameId());
 
   if (!gameId) {
     throw new Error("No game ID found in package.json metadata");
   }
 
-  // console.log(`Syncing local changes to game ${gameId}...`);
+  Logger.verbose(`Syncing local changes to game ${gameId}...`);
 
-  // t1 = performance.now();
+  t1 = performance.now();
   const remoteFiles = await getRemoteScripts({ gameId });
-  // t2 = performance.now();
-  // console.log(`Remote files fetched in ${t2 - t1}ms`);
+  t2 = performance.now();
+  Logger.verbose(`Remote files fetched in ${t2 - t1}ms`);
 
-  // t1 = performance.now();
+  t1 = performance.now();
   const localFiles = await getLocalScripts();
-  // t2 = performance.now();
-  // console.log(`Local files fetched in ${t2 - t1}ms`);
+  t2 = performance.now();
+  Logger.verbose(`Local files fetched in ${t2 - t1}ms`);
 
   // Track all changes to be made
   const patches = [];
 
-  // t1 = performance.now();
+  t1 = performance.now();
 
   // Process local files
   for (const [uri, filePath] of Object.entries(localFiles)) {
     //
-    // t1 = performance.now();
+    t1 = performance.now();
     const content = await fs.readFile(filePath, "utf-8");
-    // t2 = performance.now();
-    // console.log(`readFile ${uri} read in ${t2 - t1}ms`);
+    t2 = performance.now();
+    Logger.verbose(`readFile ${uri} read in ${t2 - t1}ms`);
 
     const remoteFile = remoteFiles[uri];
 
@@ -61,16 +61,16 @@ export async function syncUp(opts = {}) {
           emit: getEmit(filePath),
         },
       });
-      console.log(`New file: ${uri}`);
+      Logger.verbose(`New file: ${uri}`);
     } else if (remoteFile.code !== content) {
       // Changed file
-      // t1 = performance.now();
+      t1 = performance.now();
       const emit = getEmit(filePath);
-      // t2 = performance.now();
-      // console.log(`Emit ${uri} computed in ${t2 - t1}ms`);
+      t2 = performance.now();
+      Logger.verbose(`Emit ${uri} computed in ${t2 - t1}ms`);
 
       patches.push({
-        op: "replace",
+        op: "change",
         data: {
           name,
           uri,
@@ -78,7 +78,7 @@ export async function syncUp(opts = {}) {
           emit,
         },
       });
-      console.log(`Changed: ${uri}`);
+      Logger.verbose(`Changed: ${uri}`);
     }
     // Remove from remote files map to track deletions
     delete remoteFiles[uri];
@@ -92,23 +92,23 @@ export async function syncUp(opts = {}) {
         uri,
       },
     });
-    console.log(`Deleted: ${uri}`);
+    Logger.verbose(`Deleted: ${uri}`);
   }
 
-  // t2 = performance.now();
-  // console.log(`Changes computed in ${t2 - t1}ms`);
+  t2 = performance.now();
+  Logger.verbose(`Changes computed in ${t2 - t1}ms`);
 
   if (patches.length === 0) {
-    console.log("No changes to sync");
+    Logger.verbose("No changes to sync");
     return 0;
   }
 
   // Apply all changes
-  // console.log(`Applying ${patches.length} changes...`);
+  Logger.verbose(`Applying ${patches.length} changes...`);
   t1 = performance.now();
   await ApiClient.instance.saveScripts(gameId, patches);
   t2 = performance.now();
-  console.log(`Synced ${patches.length} changes in ${t2 - t1}ms`);
+  Logger.verbose(`Synced ${patches.length} changes in ${t2 - t1}ms`);
   return patches.length;
 }
 
@@ -120,8 +120,6 @@ export async function syncDown(opts = {}) {
     throw new Error("No game ID found in package.json metadata");
   }
 
-  console.log(`Syncing with game ${gameId}...`);
-
   const remoteFiles = await getRemoteScripts({ gameId });
   const localFiles = await getLocalScripts();
 
@@ -131,7 +129,8 @@ export async function syncDown(opts = {}) {
     if (!localFile || localFile.code !== remoteFile.code) {
       // update local
       const filePath = remoteUriToPath(uri);
-      console.log(`Updating local: ${filePath}`);
+      const relativePath = path.relative(process.cwd(), filePath);
+      Logger.verbose(`Updating local: ${relativePath}`);
       await fs.writeFile(filePath, remoteFile.code, "utf-8");
     }
   }
@@ -142,6 +141,4 @@ export async function syncDown(opts = {}) {
   //     await fs.unlink(localFiles[uri]);
   //   }
   // }
-
-  console.log("Sync completed successfully!");
 }

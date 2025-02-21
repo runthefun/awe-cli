@@ -5,6 +5,7 @@ import { parse as parseUrl } from "url";
 import open from "open";
 import { AWE_SITE } from "./contants.js";
 import { getToken, setToken, deleteToken } from "./utils.js";
+import { Logger } from "./logger.js";
 
 export async function login() {
   return new Promise(async (resolve, reject) => {
@@ -12,11 +13,10 @@ export async function login() {
     const token = await getToken();
 
     if (token) {
-      // console.log(`Already logged in!`);
-      return resolve(token);
+      Logger.verbose("Already logged in!");
+      resolve(token);
+      return;
     }
-
-    console.log(`Logging in...`);
 
     const server = createServer(async (req, res) => {
       //
@@ -46,15 +46,14 @@ export async function login() {
           res.end("Login successful! You can close this tab.");
 
           await setToken(token);
-          console.log(`Login successful!`);
+          Logger.verbose("Login successful!");
           resolve(token);
         } else {
           res.writeHead(400, { "Content-Type": "text/plain" });
           res.end("Failed to get token.");
-          reject("Failed to get token.");
+          reject("Failed to login.");
         }
       } catch (error) {
-        console.error(error);
         res.writeHead(500);
         res.end();
       } finally {
@@ -71,9 +70,13 @@ export async function login() {
       }
 
       const loginUrl = `${AWE_SITE}/authorize?redirect_uri=http://localhost:${address.port}/callback`;
-      console.log(`Opening browser for login...`);
-      console.log(`Waiting for login to be completed...`);
+      Logger.verbose(`Opening browser for login...`);
+      Logger.verbose(`Waiting for login to be completed...`);
       open(loginUrl);
     });
   });
+}
+
+export async function logout() {
+  await deleteToken();
 }

@@ -1,47 +1,47 @@
 // @ts-check
 
+import { execSync } from "child_process";
 import path from "path";
-import {
-  getGameId,
-  ensureDir,
-  ensureJSON,
-  copyDir,
-  writeFile,
-} from "./utils.js";
+import { getGameId, ensureJSON, writeFile, ensureGitRepo } from "./utils.js";
 import { DEF_PACKAGE_JSON, DEF_TSCONFIG } from "./contants.js";
-import { fileURLToPath } from "url";
 import { syncDown } from "./sync.js";
 import { login } from "./login.js";
 import { ApiClient } from "./api.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+import { Logger } from "./logger.js";
 const srcDir = path.join(process.cwd(), "src");
 const aweDir = path.join(srcDir, "@awe");
 
 export async function checkout(opts = {}) {
   //
-  await login();
+  await Logger.withSpinner("Logging in...", async () => {
+    await login();
+  });
 
-  const gameId = opts.gameId ?? (await getGameId());
+  const currentGameId = await getGameId();
+
+  let gameId = opts.gameId ?? currentGameId;
 
   if (!gameId) {
-    throw new Error("No game ID found in package.json metadata");
+    throw new Error("No game ID provided");
+  }
+
+  if (currentGameId && gameId !== currentGameId) {
+    throw new Error("Game ID mismatch between package.json and command line");
   }
 
   // Create src directory if it doesn't exist
-  await ensurePackageJson(gameId);
-  await ensureTSConfig(gameId);
+  await Logger.withSpinner("Initializing repo...", async () => {
+    await ensureGitRepo();
+    await ensurePackageJson(gameId);
+    await ensureTSConfig(gameId);
+    await fetchTypes();
+  });
 
-  await fetchTypes();
-  await syncDown({ gameId });
+  await Logger.withSpinner("Syncing game scripts...", async () => {
+    await syncDown({ gameId });
+  });
 
-  console.log("Sync completed successfully!");
-
-  // Run npm install in the target directory
-  console.log("Installing dependencies...");
-  const { execSync } = await import("child_process");
+  console.log("\n\nInstalling dependencies...");
   execSync("npm install", { stdio: "inherit" });
 }
 

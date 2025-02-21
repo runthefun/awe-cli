@@ -5,7 +5,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import { syncUp } from "./sync.js";
 import { getEmit, isAllowedExt, nanoid, pathToRemoteUri } from "./utils.js";
-
+import { Logger } from "./logger.js";
 const srcDir = path.join(process.cwd(), "src");
 
 export function watchScripts(opts) {
@@ -14,7 +14,7 @@ export function watchScripts(opts) {
     ignored: (filePath, stats) => {
       const res = stats?.isFile() ? !isAllowedExt(filePath) : false;
       // if (res) {
-      //   console.log("ignored", filePath);
+      //   Logger.verbose("ignored", filePath);
       // }
       return res;
     },
@@ -23,25 +23,25 @@ export function watchScripts(opts) {
   });
 
   watcher.on("add", (filePath) => {
-    // console.log("add", filePath);
+    // Logger.verbose("add", filePath);
     opts.callback({ op: "add", filePath });
   });
 
   watcher.on("change", (filePath) => {
-    // console.log("change", filePath);
+    // Logger.verbose("change", filePath);
     opts.callback({ op: "change", filePath });
   });
 
   watcher.on("unlink", (filePath) => {
-    // console.log("unlink", filePath);
+    // Logger.verbose("unlink", filePath);
     opts.callback({ op: "remove", filePath });
   });
 
   watcher.on("error", (error) => {
-    console.error("Error watching scripts", error);
+    Logger.error(error);
   });
 
-  console.log(`Watching for file changes in src directory...`);
+  Logger.verbose(`Watching for file changes in src directory...`);
 
   return watcher;
 }
