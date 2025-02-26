@@ -29,6 +29,8 @@ export async function watch(opts = {}) {
 
   await Logger.withSpinner("Syncing game scripts...", async () => {
     await syncUp({ gameId });
+  }).catch((error) => {
+    Logger.error(error.cause || error.message);
   });
 
   console.log("\n👀 Watching for scripts changes...\n");
@@ -54,6 +56,7 @@ export async function watch(opts = {}) {
         }
       } catch (err) {
         spinner.fail(err.message);
+        Logger.error(err.cause || err.message);
       }
     },
     ignoreInitial: true,

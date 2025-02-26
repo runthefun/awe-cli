@@ -87,7 +87,7 @@ program
         }
       );
     } catch (error) {
-      Logger.error(error);
+      Logger.error(error.cause || error.message);
       process.exit(1);
     }
   });

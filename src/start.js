@@ -27,6 +27,8 @@ export async function start() {
 
   await Logger.withSpinner("Syncing game scripts...", async () => {
     await syncUp({ gameId });
+  }).catch((error) => {
+    Logger.error(error.cause || error.message);
   });
 
   let clients = new Set();
@@ -119,6 +121,8 @@ export async function start() {
       const uris = chalk.dim(commitQueue.map((p) => formatPatch(p)).join(", "));
       Logger.withSpinner(`Committing changes (${uris})...`, async () => {
         await _commitPatches();
+      }).catch((error) => {
+        Logger.error(error.cause || error.message);
       });
     }, 200);
   }
@@ -129,12 +133,12 @@ export async function start() {
       commitQueue = [];
       Logger.verbose(`Committing ${patches.length} patches...`);
       let t1 = performance.now();
-      let nbChanges = await ApiClient.instance.saveScripts(gameId, patches);
+      let result = await ApiClient.instance.saveScripts(gameId, patches);
       let t2 = performance.now();
       Logger.verbose(
-        `Committed ${patches.length} patches in ${
-          t2 - t1
-        }ms, saved ${nbChanges} changes`
+        `Committed ${patches.length} patches in ${t2 - t1}ms, saved ${
+          result?.changes
+        } changes`
       );
     }
   }

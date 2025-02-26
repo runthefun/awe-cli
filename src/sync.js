@@ -110,7 +110,7 @@ export async function syncUp(opts = {}) {
   // Apply all changes
   Logger.verbose(`Applying ${patches.length} changes...`);
   t1 = performance.now();
-  await ApiClient.instance.saveScripts(gameId, patches);
+  let result = await ApiClient.instance.saveScripts(gameId, patches);
   t2 = performance.now();
   Logger.verbose(`Synced ${patches.length} changes in ${t2 - t1}ms`);
   return patches.length;

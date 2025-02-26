@@ -3,7 +3,6 @@
 import chokidar from "chokidar";
 import path from "path";
 import { promises as fs } from "fs";
-import { syncUp } from "./sync.js";
 import {
   getEmit,
   getName,

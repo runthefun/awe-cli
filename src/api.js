@@ -46,7 +46,7 @@ export class ApiClient {
 
     const result = await response.json();
     if (result.type === "Error") {
-      throw new Error(`Failed to query API ${method}: ${result.error}`);
+      throw new Error(`Error in API call ${method}: ${result.error}`);
     }
     return result.value;
   }
@@ -109,6 +109,16 @@ export class ApiClient {
 
   async saveScripts(gameId, patches) {
     const result = await this.queryApi("saveScripts", { gameId, patches });
+    if (result.errors) {
+      // errors: Record<uri, error>
+      let errorMsgs = "The following errors occurred while saving:\n";
+      for (const uri in result.errors) {
+        errorMsgs += `${uri}: ${result.errors[uri]}\n`;
+      }
+      throw new Error("Errors while saving scripts", {
+        cause: errorMsgs,
+      });
+    }
     return result;
   }
 }
