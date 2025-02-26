@@ -22,13 +22,38 @@ npm run start
 
 to start the development server.
 
-# Available commands
+# Available Commands
 
-- `npm run start` to start the development server. This will automatically sync the local scripts. It will also open the awe.box studio in your default browser.
-- `npm run watch` to watch for changes and push them to the remote game
-- `npm run push` to manually push changes to the remote game
-- `npm run login` to manually login to the AWE platform (this is automatically done when you run one of the above commands)
-- `npm run logout` to logout from the AWE platform
+### Development Server
+
+```bash
+npm run start
+```
+
+Starts the development server, automatically syncs local scripts, and opens the awe.box studio in your default browser.
+
+### Watch Mode
+
+```bash
+npm run watch
+```
+
+Watches for local changes and automatically pushes them to the remote game.
+
+### Manual Sync
+
+```bash
+npm run push
+```
+
+Manually pushes local changes to the remote game.
+
+### Authentication
+
+```bash
+npm run login    # Login to AWE platform (automatic when running other commands)
+npm run logout   # Logout from AWE platform
+```
 
 [npm]: https://img.shields.io/npm/v/awe-cli
 [npm-url]: https://www.npmjs.com/package/awe-cli
