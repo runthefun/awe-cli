@@ -38,6 +38,7 @@ export const DEF_PACKAGE_JSON = {
   type: "module",
   scripts: {
     login: "awe-cli login",
+    logout: "awe-cli logout",
     watch: "awe-cli watch",
     push: "awe-cli push",
     start: "awe-cli start",
