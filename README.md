@@ -17,3 +17,6 @@ A command-line tool that enables local development of game scripts for [awe.box]
 - `npm run push` to manually push changes to the remote game
 - `npm run login` to manually login to the AWE platform (this is automatically done when you run one of the above commands)
 - `npm run logout` to logout from the AWE platform
+
+[npm]: https://img.shields.io/npm/v/awe-cli
+[npm-url]: https://www.npmjs.com/package/awe-cli
