@@ -6,9 +6,21 @@ A command-line tool that enables local development of game scripts for [awe.box]
 
 # Development Workflow
 
-1. Optionnally, Create a new game in [awe.box](https://awe.box/studio) website
-2. _In your local project directory_, run `npx awe-cli checkout <gameId>` to checkout the game scripts locally.
-3. Run `npm run start` to start the development server.
+1. Optionally, create a new game in [awe.box](https://awe.box/studio) website if you don't have one yet.
+
+2. _In your local project directory_, run
+
+```bash
+npx awe-cli checkout <gameId>
+```
+
+3. Run
+
+```bash
+npm run start
+```
+
+to start the development server.
 
 # Available commands
 
