@@ -1,7 +1,7 @@
 // @ts-check
 
 // export const AWE_SITE = "http://localhost:3000";
-export const AWE_SITE = "https://oo-git-awe-cli-oncyber.vercel.app";
+export const AWE_SITE = "https://oo-git-dev-oncyber.vercel.app";
 
 const TYPINGS_PATH = ".awe/awe-scripting.d.ts";
 
