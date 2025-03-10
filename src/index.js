@@ -19,7 +19,7 @@ program.name("awe").description("CLI tool to fetch and create game projects");
 
 program
   .command("checkout")
-  .argument("<gameId>", "ID of the game to checkout")
+  .argument("[gameId]", "ID of the game to checkout (defaults to current game)")
   .option(
     "-d, --dir <directory>",
     "Directory to checkout into (defaults to current directory)"
@@ -27,7 +27,12 @@ program
   .action(async (gameId, opts) => {
     try {
       const workDir = opts.dir ? path.resolve(opts.dir) : process.cwd();
-      Logger.headline(`Checking out game ${chalk.cyan(gameId)}...`);
+
+      Logger.headline(
+        `Checking out ${
+          gameId ? `game ${chalk.cyan(gameId)}` : "current user game"
+        }...`
+      );
       await checkout({ gameId, workDir });
       Logger.success("Checkout completed");
       Logger.info("Run `npm run start` to start the development server");

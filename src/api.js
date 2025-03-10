@@ -121,4 +121,9 @@ export class ApiClient {
     }
     return result;
   }
+
+  async getCurrentGameId() {
+    const result = await this.queryApi("getCurrentGameId", {});
+    return result.id;
+  }
 }

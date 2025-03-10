@@ -32,7 +32,17 @@ export async function checkout(opts = {}) {
   let gameId = opts.gameId ?? currentGameId;
 
   if (!gameId) {
-    throw new Error("No game ID provided");
+    //
+    gameId = await Logger.withSpinner(
+      "Getting current game ID...",
+      async () => {
+        return await ApiClient.instance.getCurrentGameId();
+      }
+    );
+
+    if (!gameId) {
+      throw new Error("Could not determine current game ID");
+    }
   }
 
   if (currentGameId && gameId !== currentGameId) {
