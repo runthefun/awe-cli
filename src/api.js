@@ -63,8 +63,8 @@ export class ApiClient {
     };
   }
 
-  async createGame({ title }) {
-    const gameId = await this.queryApi("createGame", { title });
+  async createGame({ title, mode = "default" }) {
+    const gameId = await this.queryApi("createGame", { title, mode });
     return gameId;
   }
 
@@ -89,11 +89,16 @@ export class ApiClient {
     }
   }
 
-  async fetchTypes() {
+  async fetchTypes(opts = { mode: "default" }) {
     //
-    const typefiles = {
-      "awe-scripting.d.ts": "oo-scripting.d.ts",
-    };
+    const typefiles =
+      opts.mode === "default"
+        ? {
+            "awe-scripting.d.ts": "oo-scripting.d.ts",
+          }
+        : {
+            "awe-scripting.d.ts": "oo-scripting-vibe.d.ts",
+          };
 
     let types = {};
 
