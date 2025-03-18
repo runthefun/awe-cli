@@ -8,12 +8,20 @@ import {
   writeFile,
   ensureGitRepo,
   ensureDir,
+  copyDir,
 } from "./utils.js";
 import { DEF_PACKAGE_JSON, DEF_TSCONFIG } from "./contants.js";
 import { syncDown } from "./sync.js";
 import { login } from "./login.js";
 import { ApiClient } from "./api.js";
 import { Logger } from "./logger.js";
+import { readFile } from "fs/promises";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const CURSOR_RULES_SRC_DIR = path.join(__dirname, "cursor-rules");
 
 export async function checkout(opts = {}) {
   //
@@ -22,6 +30,8 @@ export async function checkout(opts = {}) {
   // Update directory references
   const srcDir = path.join(workDir, "src");
   const aweDir = path.join(workDir, ".awe");
+
+  const cursorRulesDestDir = path.join(workDir, ".cursor/rules");
 
   await Logger.withSpinner("Logging in...", async () => {
     await login();
@@ -56,7 +66,8 @@ export async function checkout(opts = {}) {
     await ensureGitRepo(workDir);
     await ensurePackageJson(gameId, null, workDir);
     await ensureTSConfig(gameId, null, workDir);
-    await fetchTypes(aweDir);
+    await fetchTypes(aweDir, opts.mode);
+    await writeCursorRules(cursorRulesDestDir, opts.mode);
   });
 
   await Logger.withSpinner("Syncing game scripts...", async () => {
@@ -116,9 +127,17 @@ export async function ensureTSConfig(
   return json;
 }
 
-async function fetchTypes(aweDir) {
-  const types = await ApiClient.instance.fetchTypes();
+async function fetchTypes(aweDir, mode = "default") {
+  const types = await ApiClient.instance.fetchTypes({ mode });
   for (const [dest, content] of Object.entries(types)) {
     await writeFile(path.join(aweDir, dest), content);
   }
+}
+
+async function writeCursorRules(destDir, mode = "default") {
+  if (mode !== "vibe") {
+    return;
+  }
+  // copy all files from CURSOR_RULES_SRC_DIR to destDir
+  await copyDir(CURSOR_RULES_SRC_DIR, destDir);
 }

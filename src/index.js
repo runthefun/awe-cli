@@ -49,18 +49,27 @@ program
     "-d, --dir <directory>",
     "Directory to create the game in (defaults to current directory)"
   )
+  .option("-v, --vibe", "Create game in vibe mode")
   .action(async (opts) => {
     try {
       const workDir = opts.dir ? path.resolve(opts.dir) : process.cwd();
-      const title = opts.title || "Untitled Game";
-      Logger.headline(`Creating game ${chalk.cyan(title)}...`);
+      const title = opts.title || "My Game";
+      let mode = opts.vibe ? "vibe" : "default";
+      Logger.headline(
+        `${
+          mode === "vibe" ? "Vibing new game" : "Creating new game"
+        } ${chalk.cyan(title)}...`
+      );
       const gameId = await Logger.withSpinner(
         `Creating game ${chalk.cyan(title)}...`,
         async () => {
-          return await ApiClient.instance.createGame({ title });
+          return await ApiClient.instance.createGame({
+            title,
+            mode,
+          });
         }
       );
-      await checkout({ gameId, workDir });
+      await checkout({ gameId, workDir, mode });
       Logger.success("Game created");
       Logger.info("Run `npm run start` to start the development server");
     } catch (error) {

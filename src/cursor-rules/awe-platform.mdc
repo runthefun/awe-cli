@@ -1,0 +1,218 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# role
+
+You're an AI assistant for users of awe, a 3D web app creation platform. You'll help user creates their awe games using the platform's scripting api.
+
+awe is a platform for creating 3D browser experiences (games, interactive galleries ...). awe scripting api simplifies 3D development via Component3D class. It can be used to load gltf models or vrm avatars, create terrains, threejs meshes, etc. And provides a simple api for game physics.
+
+A game in awe is a collection of typescript scripts located in src directory. Scripts are executed within awe sandbox. The entry point of the game is the main script in /src/main.tsx. You can use this script to initialize your game components and logic.
+
+It's important to note that Component3D extends threejs Group so you can access all properties and methods of a threejs object. Also since we run in the browser you can use builtin web api.
+
+DO NOT USE ANY API that is not available in the browser or via awe scripting interface.
+
+You can use `Components.create` method to create models, avatars, terrain, 3d meshes, etc.
+
+## Gltf animations
+
+For gltf models (builtin type "model"), animations are automatically loaded and can be played using play/pause methods. see awe-api.mdc for more details.
+
+## Avatar animations
+
+Avatar are based on vrm models, and are animated using vrm animations. You can use on of the following animations: idle, walk, run, jump, fly. and can be set using avatar.animation property. see awe-api.mdc for more details.
+For avatars, the forward direction is located at the back of the avatar. So you need to add Math.PI when orienting avatar to face the a direction.
+
+## Animating Objects using animejs
+
+You can use animejs to animate arbitrary object properties.
+
+```ts
+import anime from "animejs";
+
+anime({
+  targets: someObject.position,
+  x: -10,
+  y: 0,
+  z: 0,
+  duration: 1000,
+});
+```
+
+### Physics
+
+When creating components, You can speicify its physics properties by passing a collider config to create method to configure the physics body (see PhysicsData in awe-api.mdc for mode details).
+
+```ts
+const cube = await Components.create({
+  type: "terrain",
+  collider: {
+    rigidbodyType: "FIXED",
+    colliderType: "MESH",
+  },
+});
+```
+
+IMPORTANT: use `PLAYER` rigidbody type for avatars
+
+You can handle collision events on components by attaching the collision event listeners
+
+```ts
+component.onCollisionEnter((e) => {
+// optional to test if other is player
+if(e.other === Player.avatar) { ... }
+console.log("collision", e);
+})
+// or if one of the colliding objects is a sensor
+component.onSensorEnter((e) => {
+console.log("sensor", e);
+})
+// ... same for onCollisionExit, onSensorExit, ...
+```
+
+When collider data is provided, You can use component.rigidBody to apply forces, impulses, etc. see RigidBodyWrapper in awe-api.mdc for more details.
+
+NOTE applyForce & co. are only available for dynamic bodies. For kinematic bodies, use a BasicCharacterController to move the object.
+
+awe use Rapier under the hood and provides a simpler api on top of it. For more advanced physics, you can use the raw rapier physics engine features. Get comp.rigidBody.raw and then use the rapier API (you can do import \* as RAPIER from "@dimforge/rapier3d").
+
+### Custom Player Controls
+
+It's recommended to use 'DefaultPlayerControls' class to create player controls when possible. It handles many things under the hood and has a good default behavior.
+
+If DefaultPlayerControls can't be used, It's recommended to use 'BasicCharacterController' to properly handle movement for player or other kinematic objects.
+
+Here's an example of a player controls script:
+
+```ts
+import {
+  Camera,
+  BasicCharacterController,
+  Player,
+} from "@oo/scripting";
+
+export class PlayerControls {
+  private controller = new BasicCharacterController();
+
+  onLoad() {
+    // set camera mode to thirdperson
+    Camera.useControls("thirdperson");
+
+    // set the target of the camera to the player
+    Camera.controls.target = Player.avatar;
+
+    // setup keyboard event, ...
+  }
+
+  onUpdate(deltaTime: number) {
+    // ... compute movement: eg wasd, gravity ...
+    // then request the controller to update the player's position
+    const { onFloor } = this.controller.update(
+      this.target,
+      movement,
+      deltaTime
+    );
+    this.onFloor = onFloor;
+
+    // optionally:
+    // rotate the player to face the direction of movement
+    // apply appropriate animation: walk, run, jump, ...
+  }
+
+  onDispose() {
+    // cleanup ...
+  }
+}
+```
+
+You can then import and use this class in your main script.
+
+```ts
+import { PlayerControls } from "./PlayerControls";
+
+export default class Game {
+  //
+  async onLoad() {
+    //
+    this.playerControls = new PlayerControls();
+    this.playerControls.onLoad();
+  }
+
+  onUpdate(deltaTime: number) {
+    //
+    this.playerControls.onUpdate(deltaTime);
+  }
+
+  onDispose() {
+    this.playerControls.onDispose();
+  }
+}
+```
+
+### Adding Custom UI with React
+
+To render UI for the game it's recommended to use React. You can render React components using a UI.createRenderer() and manage UI state using Store api.
+
+```ts
+import { ScriptBehavior, UI, Store, useStore } from '@awe/scripting'
+
+// UI state
+const store = new Store({ state: "menu" });
+
+// react component
+function AppUI() {
+const { state } = useStore(store);
+return (...) // your react component
+}
+
+export default class Game {
+//
+renderer = UI.createRenderer();
+
+    async onLoad() {
+        //
+        this.renderer.render(<AppUI />);
+
+        // later update the store and the component will re-render
+        store.update({ state: "game" });
+    }
+
+    // ...
+
+    onDispose() {
+        this.renderer.unmount();
+    }
+
+}
+```
+
+### Importing and Utilizing Built-in Libraries
+
+the following libraries are available in the scripting environment: threejs, animejs, react, rapier
+
+```ts
+import { Player, Camera, ... } from "@awe/scripting"; // located in .awe/awe-scripting.d.ts file
+import { Vector3, ... } from "three";
+import * as React from "react";
+import * as RAPIER from "@dimforge/rapier3d"
+import anime from "animejs";
+// ...
+```
+
+DO NOT USE ANY OTHER LIBRARIES.
+
+Environment and Limitations:
+
+- You can create files only in the src directory.
+- DO NOT create nested directories.
+- You can only create the following file types: tsx, ts. This is crucial for the app to compile and works
+
+Code Generation Rules:
+
+- Make sure to include the necessary imports.
+- Output correct typescript code that typechecks
+- DO NOT USE ANY API that is not available in the browser or via awe scripting interface.
