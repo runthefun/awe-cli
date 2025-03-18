@@ -1,6 +1,7 @@
 import { AllowedPointerEventsType } from "@pmndrs/uikit/dist/panel";
 import { AnimationClip } from "three";
 import { AppStateOpts } from "..";
+import { BackgroundComponent as BackgroundComponent_2 } from "../scripting";
 import { BaseEvent } from "three";
 import { BatchComponentData as BatchComponentData_2 } from "./batchdata";
 import { BirdStaticComponentData } from "./birddata";
@@ -17,12 +18,10 @@ import type { Collider as Collider_3 } from "@dimforge/rapier3d";
 import type { ColliderDesc } from "@dimforge/rapier3d";
 import { Color as Color_2 } from "three";
 import { ColorSpace } from "three";
-import { Component3D as Component3D_2 } from "../../scripting";
 import { Component3DData as Component3DData_2 } from "../../../../scripting";
 import { Component3DData as Component3DData_3 } from "engine/scripting";
-import { Component3DData as Component3DData_4 } from "../../scripting";
-import { Component3DData as Component3DData_5 } from "../../../scripting";
-import { Component3DData as Component3DData_6 } from "../scripting";
+import { Component3DData as Component3DData_4 } from "../../../scripting";
+import { Component3DData as Component3DData_5 } from "../scripting";
 import type { ConnectedSolanaWallet } from "@privy-io/react-auth";
 import type { ConnectedWallet as ConnectedWallet_2 } from "@privy-io/react-auth";
 import { ConnectedWallet as ConnectedWallet_3 } from "./providers";
@@ -31,13 +30,15 @@ import { CrowdAgent } from "recast-navigation";
 import { CrowdParams } from "recast-navigation";
 import { DebugDrawer } from "@recast-navigation/three";
 import { default as default_2 } from "../../abstract/pipelinelines";
-import { default as default_3 } from "../../abstract/instancemeshwrapper";
-import { default as default_4 } from "../../../abstract/instancemeshwrapper";
+import { default as default_3 } from "../../../abstract/instancemeshwrapper";
+import { default as default_4 } from "../../abstract/instancemeshwrapper";
 import type { EngineEdit } from "../../../../engine-edit/src/index";
+import { EnvmapComponent as EnvmapComponent_2 } from "../scripting";
 import { Euler } from "three";
 import EventEmitter from "events";
 import { EventListener as EventListener_2 } from "three";
 import type { EventQueue } from "@dimforge/rapier3d";
+import { FogComponent as FogComponent_2 } from "../scripting";
 import { Game as Game_2 } from "..";
 import { GameSignals } from "..";
 import { GrassComponentData as GrassComponentData_2 } from "./grassdata";
@@ -49,6 +50,7 @@ import { Intersection } from "three";
 import { JsonRpcApiProvider } from "ethers/providers";
 import type { JsonRpcProvider } from "ethers";
 import { Layers } from "three";
+import { LightingComponent as LightingComponent_2 } from "../scripting";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { MagnificationTextureFilter } from "three";
 import { MapSchema } from "@colyseus/schema";
@@ -942,6 +944,7 @@ declare type BackgroundMesh = Mesh & {
   getRaw: () => Texture | Color_2;
   backgroundType: "color" | "image" | "sky";
   updateOpts?: (opts: any) => void;
+  dispose?: () => void;
 };
 
 declare type BackgroundOpt = "Color" | "Image" | "Shader";
@@ -1224,7 +1227,7 @@ declare class BatchComponentEditor extends Component3DEditor<BatchComponent> {
   private _canUseOctree;
   _prevColliderData: any;
   init(): void;
-  duplicateBase(): Promise<Component3D<Component3DData_3>>;
+  duplicateBase(): Promise<Component3D>;
   _selectionMesh: any;
   getSelectionMesh(): any;
   getGUI(): {
@@ -1269,7 +1272,7 @@ declare class BatchComponentEditor extends Component3DEditor<BatchComponent> {
     rotation?: number[];
     scale?: number[];
     boundingBox?: Box3;
-  }): Promise<Component3D<Component3DData_3>>;
+  }): Promise<Component3D<Component3DData_4>>;
   onBatchRemove(item: any): Promise<void>;
   onBatchEnd(opts: any): void;
   private _getInstancesData;
@@ -1384,7 +1387,7 @@ declare class BirdFactory {
   preload(): Promise<void>;
   geometry: Geometry;
   texture: any;
-  get(parent: any, data?: {}): Promise<default_3>;
+  get(parent: any, data?: {}): Promise<default_4>;
   _isInit: boolean;
   initialisation: Promise<void>;
   mesh: InstancedPipelineMesh;
@@ -1976,7 +1979,7 @@ declare class CircleFactory {
   _instances: {};
   preload(): Promise<void>;
   geometry: CircleGeometry;
-  get(parent: any, data?: {}): Promise<default_3>;
+  get(parent: any, data?: {}): Promise<default_4>;
   _isInit: boolean;
   initialisation: Promise<void>;
   mesh: InstancedPipelineMesh;
@@ -3101,7 +3104,7 @@ export declare class ComponentManager extends AugmentedGroup {
   private _nodesPromises;
   private _getPriority;
   private _canLoad;
-  get components(): Component3D<Component3DData_4>[];
+  get components(): Component3D<Component3DData_3>[];
 
   addLoadTask(promise: Promise<any>): void;
 
@@ -3116,35 +3119,38 @@ export declare class ComponentManager extends AugmentedGroup {
 
   private _getNode;
 
-  byInternalId(id: string): Component3D<Component3DData_4>;
+  byInternalId(id: string): Component3D<Component3DData_3>;
   get loaded(): Promise<void>;
-  get background(): Component3D<Component3DData_4>;
+  get background(): BackgroundComponent;
+  get fog(): FogComponent;
+  get lighting(): LightingComponent;
+  get envMap(): EnvmapComponent;
   /**
    * Returns a component by its id.
    */
-  byId(id: string): Component3D<Component3DData_4>;
+  byId(id: string): Component3D<Component3DData_3>;
   /**
    * Returns all component with matching tag.
    * A tag is a string identifier that can be used to group components.
    */
-  byTag(tag: string): Component3D<Component3DData_4>[];
+  byTag(tag: string): Component3D<Component3DData_3>[];
   /**
 
      * Returns all components with matching type.
      */
-  byType(type: string): Component3D<Component3DData_4>[];
+  byType(type: string): Component3D<Component3DData_3>[];
   /**
    * Returns all components with matching name.
    */
-  byName(name: string): Component3D<Component3DData_4>[];
+  byName(name: string): Component3D<Component3DData_3>[];
   /**
    * Returns all components satisfying the given filter function.
    */
-  filter(f: (c: Component3D) => boolean): Component3D<Component3DData_4>[];
+  filter(f: (c: Component3D) => boolean): Component3D<Component3DData_3>[];
   /**
    * Returns the first component satisfying the given filter function.
    */
-  find(f: (c: Component3D) => boolean): Component3D<Component3DData_4>;
+  find(f: (c: Component3D) => boolean): Component3D<Component3DData_3>;
   /**
    * Iterates over all components and calls the given function for each one.
    */
@@ -3174,9 +3180,24 @@ export declare class ComponentManager extends AugmentedGroup {
    * For example a "model" component will return a ModelComponent.
    *
    */
-  create<T extends CType>(
-    data: CreateComponentArg<T>,
-    opts?: {
+  create(data: ModelComponentData): Promise<ModelComponent>;
+  create(data: TerrainComponentData): Promise<TerrainComponent>;
+  create(data: AvatarComponentData): Promise<AvatarComponent>;
+  create(data: MeshComponentData): Promise<MeshComponent>;
+  create(data: VideoComponentData): Promise<VideoComponent>;
+  create(data: ImageComponentData): Promise<ImageComponent>;
+  create(data: AudioComponentData): Promise<AudioComponent>;
+  create(data: TextComponentData): Promise<TextComponent>;
+  create(data: BirdComponentData): Promise<BirdComponent>;
+  create(data: DialogComponentData): Promise<DialogComponent>;
+  create(data: InteractionComponentData): Promise<InteractionComponent>;
+  create(data: GrassComponentData): Promise<GrassComponent>;
+  create(
+    data: {
+      type: string;
+      [key: string]: any;
+    },
+    opts: {
       abort?: AbortSignal;
       transient?: boolean;
       parent?: Object3D;
@@ -3222,7 +3243,7 @@ export declare class ComponentManager extends AugmentedGroup {
   /**
    * Get the component that is currently being looked at by the camera.
    */
-  get lookedAtComponent(): Component3D<Component3DData_4>;
+  get lookedAtComponent(): Component3D<Component3DData_3>;
   /**
    * Get how long the camera has been looking at the current component.
    */
@@ -4331,7 +4352,7 @@ export declare class Device {
 /**
  * Represents a dialog component in a 3D space.
  */
-declare class DialogComponent extends Component3D<DialogComponentData> {
+export declare class DialogComponent extends Component3D<DialogComponentData> {
   private _factory;
   private _dialog;
 
@@ -4354,7 +4375,7 @@ declare class DialogComponent extends Component3D<DialogComponentData> {
  *
  * Data specification for {@link DialogComponent}, see {@link ComponentManager.create} on how to create a component
  */
-declare interface DialogComponentData extends Component3DData {
+export declare interface DialogComponentData extends Component3DData {
   type: "text";
   /**
    * if not provided, an auto id will be generated
@@ -4542,7 +4563,6 @@ export declare const Env: {
  * This is a singleton component. You can only have one environment map in the game.
  */
 export declare class EnvmapComponent extends Component3D<any> {
-  private _envMap;
   protected init(): Promise<void>;
   private _abort;
   private _update3D;
@@ -5257,8 +5277,8 @@ declare class GrassBatch {
  *
  * See {@link GrassComponentData} for the data schema used to create a grass component
  */
-declare class GrassComponent extends Component3D<GrassComponentData> {
-  getInstanceWrapper(): default_4;
+export declare class GrassComponent extends Component3D<GrassComponentData> {
+  getInstanceWrapper(): default_3;
   updateFromSource(): void;
 
   updateColors(): void;
@@ -5278,7 +5298,7 @@ declare class GrassComponent extends Component3D<GrassComponentData> {
  *
  * Data specification for {@link GrassComponent}, see {@link ComponentManager.create} on how to create a component
  */
-declare interface GrassComponentData extends Component3DData {
+export declare interface GrassComponentData extends Component3DData {
   type: "grass";
   /**
    * if not provided, an auto id will be generated
@@ -6147,7 +6167,7 @@ declare interface InteractData {
   billboard: boolean;
 }
 
-declare class InteractionComponent extends Component3D<InteractionComponentData> {
+export declare class InteractionComponent extends Component3D<InteractionComponentData> {
   _factory: InteractionFactory;
   _interaction: any;
   isInteractionComponent: boolean;
@@ -6178,7 +6198,7 @@ declare class InteractionComponent extends Component3D<InteractionComponentData>
  *
  * Data specification for {@link InteractionComponent}, see {@link ComponentManager.create} on how to create a component
  */
-declare interface InteractionComponentData extends Component3DData {
+export declare interface InteractionComponentData extends Component3DData {
   type: "text";
   /**
    * if not provided, an auto id will be generated
@@ -6608,7 +6628,7 @@ declare class LookatDetector extends AugmentedGroup {
   private _update;
   private _setCurrent;
   private _emitEvent;
-  _doRaycast(): Component3D<Component3DData_6>;
+  _doRaycast(): Component3D | null;
   /**
    * A component is looked at if:
    *  -
@@ -6616,7 +6636,7 @@ declare class LookatDetector extends AugmentedGroup {
   _hitTest(component: Component3D): LookatHit;
   onLookatEnter(callback: (component: Component3D) => void): void;
   onLookatExit(callback: (component: Component3D) => void): void;
-  get current(): Component3D<Component3DData_6>;
+  get current(): Component3D<Component3DData_5>;
   get frameStep(): number;
   set frameStep(value: number);
   get lookatDuration(): number;
@@ -7686,7 +7706,7 @@ declare type ParseType<
  * See {@link ParticlesComponentData} for the data schema used to create an particles component
  */
 declare class ParticlesComponent extends Component3D<ParticlesComponentData> {
-  source: Component3D<Component3DData_5>;
+  source: Component3D;
   autoSpawn: boolean;
   button: any;
   button2: any;
@@ -9006,7 +9026,7 @@ export declare class PrefabResource extends Resource<PrefabResourceData> {
     parent?: Component3D;
     abort?: AbortSignal;
     netId?: string;
-  }): Promise<Component3D<Component3DData_5>>;
+  }): Promise<Component3D>;
 
   private _safeCheckDataWrappers;
   private assertNotInstance;
@@ -9208,8 +9228,8 @@ export declare class Resource<Data extends ResourceData = ResourceData> {
   getRequiredResources(): Resource<ResourceData<unknown>>[];
   hasDependentResources(): boolean;
   hasDependentComponents(): boolean;
-  getInstances(): Component3D_2<Component3DData_4>[];
-  getDirectInstances(): Component3D_2<Component3DData_4>[];
+  getInstances(): Component3D[];
+  getDirectInstances(): Component3D[];
   hasReferences(): boolean;
   isRefByResource(r: Resource): boolean;
   isDirectTypeOf(data: any): boolean;
@@ -9760,7 +9780,7 @@ export declare class ScriptComponent extends ScriptHost {
   /**
    * Creates a new instance of the script component
    */
-  static create<T extends ScriptComponent>(
+  static create<T extends Component3D>(
     this: Constructor<T>,
     data?: DataProps<T>
   ): Promise<T>;
@@ -10332,7 +10352,10 @@ export declare class Space extends AugmentedGroup {
    * Returns the current camera in the scene. cf {@link MainCamera}
    */
   get camera(): PerspectiveCamera;
+  get background(): BackgroundComponent_2;
+  get fog(): FogComponent_2;
 
+  get envMap(): EnvmapComponent_2;
   get sessionId(): string;
 
   /**
@@ -10357,8 +10380,6 @@ export declare class Space extends AugmentedGroup {
    * @param {{ width?: number, height?: number }} opts - Options for the screenshot
    */
   captureFrame(opts?: { width?: number; height?: number }): Promise<string>;
-
-  #private;
 }
 
 /**
@@ -10627,6 +10648,47 @@ export declare class TerrainComponent extends Component3D<any> {
   private computeGeometry;
   private computeNoiseGeometryInWorker;
   protected dispose(): void;
+}
+
+/**
+ * @public
+ *
+ * Data specification for {@link TerrainComponent}, see {@link ComponentManager.create} on how to create a component
+ */
+export declare interface TerrainComponentData extends Component3DData {
+  type: "terrain";
+  shape?: "plane" | "circle";
+  /**
+   * Position of the component in the space. Defaults to {x: 0, y: 0, z: 0}
+   */
+  position?: XYZ;
+  /**
+   * Rotation of the component in the space. Defaults to {x: 0, y: 0, z: 0}
+   */
+  rotation?: XYZ;
+  /**
+   * Scale of the component in the space. Defaults to {x: 1, y: 1, z: 1}
+   */
+  scale?: XYZ;
+  noiseEnabled?: boolean;
+  mode?: "color" | "texture" | "shader";
+  color?: string;
+  shader?: "grid" | "biplanar";
+  griddiv?: number;
+  lineWidth?: number;
+  gridColor?: string;
+  textureOpts?: {
+    id?:
+      | "wooden"
+      | "rock"
+      | "grass"
+      | "sand"
+      | "snow"
+      | "rust"
+      | "marble"
+      | "brick";
+    path?: string;
+  };
 }
 
 /** @public */
@@ -11332,6 +11394,7 @@ export declare class WaterComponent extends Component3D<WaterComponentData> {
  * Data specification for {@link WaterComponent}, see {@link ComponentManager.create} on how to create a component
  */
 declare interface WaterComponentData extends Component3DData {
+  type: "water";
   /**
    * Position of the component in the space. Defaults to {x: 0, y: 0, z: 0}
    */

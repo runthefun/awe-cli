@@ -449,6 +449,9 @@ export declare class MainCamera extends PerspectiveCamera {
   heightOffset: number;
 }
 
+/**
+ * Manage the components in the game. Can be accessed using Components singleton.
+ */
 export declare class ComponentManager extends Object3D {
   // lookup by data.id
   byType(type: string): Component3D[];
@@ -458,13 +461,31 @@ export declare class ComponentManager extends Object3D {
   find(f: Function): Component3D;
   forEach(f: Function): void;
   // create a component
-  create(data: Component3DData): Promise<Component3D>;
+  create(data: ModelComponentData): Promise<ModelComponent>;
+  create(data: TerrainComponentData): Promise<TerrainComponent>;
+  create(data: AvatarComponentData): Promise<AvatarComponent>;
+  create(data: ObjectComponentData): Promise<ObjectComponent>;
+  create(data: TextComponentData): Promise<TextComponent>;
   // destroy a component
   destroy(comp: Component3D): boolean;
   // duplicate a component
-  duplicate(comp: Component3D): Promise<Component3D>;
+  duplicate<T extends Component3D>(comp: T): Promise<T>;
 
   background: BackgroundComponent;
+}
+
+/**
+ * Control the game loop. Can be accessed using World singleton.
+ */
+export declare class Space {
+  /**
+   * Start the game loop
+   */
+  start(payload?: any): void;
+  /**
+   * Stop the game loop
+   */
+  stop(payload?: any): void;
 }
 
 /**
@@ -603,3 +624,8 @@ export declare const Camera: MainCamera;
 export declare const Physics: PhysicsRapierWrapper;
 // main player
 export declare const Player: PlayerWrapper;
+
+// component manager
+export declare const Components: ComponentManager;
+
+export declare const World: Space;

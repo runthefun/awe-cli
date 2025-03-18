@@ -11,7 +11,7 @@ export const DEF_TSCONFIG = {
     module: "ES2020",
     moduleResolution: "node",
     esModuleInterop: true,
-    strict: true,
+    strict: false,
     outDir: "dist",
     rootDir: "src",
     checkJs: true,
@@ -57,6 +57,8 @@ export const DEF_PACKAGE_JSON = {
     chokidar: "^3.5.3",
     "@types/three": "^0.173.0",
     "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/animejs": "^3.1.13",
     "awe-cli": "latest",
   },
 };
